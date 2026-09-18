@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>LivePlayer</title>
+  <style>
+    body{font-family:Arial;background:#1a1a2e;color:#fff;text-align:center;padding:20px}
+    input{padding:8px;width:400px;border-radius:6px;border:none}
+    button{padding:8px 20px;border:none;border-radius:6px;cursor:pointer;font-weight:bold}
+    .start{background:#22c55e;color:#fff}
+    .stop{background:#e94560;color:#fff}
+    #status{margin:15px 0;padding:10px;background:#16213e;border-radius:6px;font-family:monospace}
+    #player{width:100%;max-width:1280px;margin:0 auto}
+  </style>
+</head>
+<body>
+  <h2>⚡ LivePlayer</h2>
+  <input id="flvUrl" placeholder="HTTP-FLV 地址">
+  <button class="start" onclick="play()">▶ 播放</button>
+  <button class="stop" onclick="stop()">⏹ 停止</button>
+  <div id="status"></div>
+  <div id="player"></div>
+
+  <script src="dist/liveplayer.js"></script>
+  <script>
+    let p;
+    function play() {
+      const url = document.getElementById('flvUrl').value.trim();
+      if (!url) { alert('请输入地址'); return; }
+      p = new LivePlayer({
+        container: '#player',
+        url,
+        onLatency: ms => document.getElementById('status').innerText = '延迟: ' + ms + 'ms'
+      });
+      p.play();
+    }
+    function stop() { if (p) p.destroy(); }
+  </script>
+</body>
+</html>
