@@ -2,39 +2,233 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>LivePlayer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LivePlayer v2.0 Demo</title>
   <style>
-    body{font-family:Arial;background:#1a1a2e;color:#fff;text-align:center;padding:20px}
-    input{padding:8px;width:400px;border-radius:6px;border:none}
-    button{padding:8px 20px;border:none;border-radius:6px;cursor:pointer;font-weight:bold}
-    .start{background:#22c55e;color:#fff}
-    .stop{background:#e94560;color:#fff}
-    #status{margin:15px 0;padding:10px;background:#16213e;border-radius:6px;font-family:monospace}
-    #player{width:100%;max-width:1280px;margin:0 auto}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: #0f1115;
+      color: #e5e7eb;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .container { max-width: 960px; margin: 0 auto; }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    .sub { color: #9ca3af; font-size: 13px; margin-bottom: 20px; }
+    .panel {
+      background: #1a1d24;
+      border: 1px solid #2a2e37;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    input[type="url"] {
+      flex: 1;
+      min-width: 260px;
+      background: #0f1115;
+      border: 1px solid #2a2e37;
+      color: #e5e7eb;
+      border-radius: 6px;
+      padding: 9px 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    input[type="url"]:focus { border-color: #4f8cff; }
+    select, button {
+      background: #242a35;
+      border: 1px solid #2a2e37;
+      color: #e5e7eb;
+      border-radius: 6px;
+      padding: 9px 14px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button.primary { background: #4f8cff; border-color: #4f8cff; color: #fff; font-weight: 600; }
+    button.primary:hover { background: #3d7bf0; }
+    button.danger { background: #dc2626; border-color: #dc2626; color: #fff; }
+    button:hover { opacity: 0.9; }
+    #video {
+      width: 100%;
+      background: #000;
+      border-radius: 8px;
+      max-height: 480px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+    .badge.flv { background: #7c3aed22; color: #a78bfa; border: 1px solid #7c3aed55; }
+    .badge.hls { background: #05966922; color: #34d399; border: 1px solid #05966955; }
+    .badge.dash { background: #d9770622; color: #fbbf24; border: 1px solid #d9770655; }
+    .badge.mp4 { background: #2563eb22; color: #60a5fa; border: 1px solid #2563eb55; }
+    .badge.state { background: #374151; color: #e5e7eb; border: 1px solid #4b5563; }
+    .log {
+      background: #0b0d11;
+      border: 1px solid #2a2e37;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      height: 180px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .log .err { color: #f87171; }
+    .log .warn { color: #fbbf24; }
+    .log .ok { color: #34d399; }
+    .log .info { color: #93c5fd; }
+    .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .presets button { background: #242a35; padding: 6px 12px; font-size: 12px; }
+    .meta { font-size: 13px; color: #9ca3af; margin-top: 8px; }
+    .meta b { color: #e5e7eb; }
   </style>
 </head>
 <body>
-  <h2>⚡ LivePlayer</h2>
-  <input id="flvUrl" placeholder="HTTP-FLV 地址">
-  <button class="start" onclick="play()">▶ 播放</button>
-  <button class="stop" onclick="stop()">⏹ 停止</button>
-  <div id="status"></div>
-  <div id="player"></div>
+  <div class="container">
+    <h1>🎬 LivePlayer v2.0</h1>
+    <p class="sub">FLV / HLS / DASH / MP4 统一直播点播播放器 — Demo</p>
 
-  <script src="dist/liveplayer.js"></script>
-  <script>
-    let p;
-    function play() {
-      const url = document.getElementById('flvUrl').value.trim();
-      if (!url) { alert('请输入地址'); return; }
-      p = new LivePlayer({
-        container: '#player',
-        url,
-        onLatency: ms => document.getElementById('status').innerText = '延迟: ' + ms + 'ms'
-      });
-      p.play();
+    <div class="panel">
+      <div class="row">
+        <input type="url" id="url" placeholder="输入流地址，如 https://example.com/live/stream.flv" />
+        <select id="type">
+          <option value="">自动识别</option>
+          <option value="flv">FLV</option>
+          <option value="hls">HLS</option>
+          <option value="dash">DASH</option>
+          <option value="mp4">MP4</option>
+        </select>
+        <select id="isLive">
+          <option value="">自动判断</option>
+          <option value="true">直播</option>
+          <option value="false">点播</option>
+        </select>
+        <button class="primary" id="playBtn">▶ 播放</button>
+        <button id="pauseBtn">⏸ 暂停</button>
+        <button id="resumeBtn">⏵ 恢复</button>
+        <button class="danger" id="destroyBtn">✖ 销毁</button>
+      </div>
+      <div class="presets">
+        <button data-url="https://media.w3.org/2010/05/sintel/trailer.mp4" data-type="mp4">MP4 测试源</button>
+        <button data-url="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" data-type="hls">HLS 直播源</button>
+        <button data-url="https://dash.akamaized.net/envivio/EnvivioDash3/manifest.mpd" data-type="dash">DASH 测试源</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row" style="margin-bottom: 8px;">
+        <span class="badge flv" id="typeBadge">格式: -</span>
+        <span class="badge state" id="stateBadge">状态: idle</span>
+        <span class="badge state" id="latencyBadge">延迟: -</span>
+      </div>
+      <div id="videoWrap"></div>
+      <div class="meta" id="meta">未播放</div>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <b>事件日志</b>
+        <button id="clearLog" style="padding:4px 10px;font-size:12px;">清空</button>
+      </div>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import LivePlayer from './src/index.js';
+
+    const $ = (id) => document.getElementById(id);
+    const logEl = $('log');
+
+    function log(msg, cls = 'info') {
+      const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+      const line = document.createElement('div');
+      line.innerHTML = `<span class="info">[${time}]</span> <span class="${cls}">${msg}</span>`;
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
     }
-    function stop() { if (p) p.destroy(); }
+
+    let player = null;
+
+    function getConfig() {
+      return {
+        container: $('videoWrap'),
+        url: $('url').value.trim(),
+        type: $('type').value || undefined,
+        isLive: $('isLive').value === '' ? undefined : $('isLive').value === 'true',
+        autoplay: true,
+        muted: false,
+      };
+    }
+
+    async function play() {
+      const cfg = getConfig();
+      if (!cfg.url) { log('请输入流地址', 'warn'); return; }
+
+      if (player) { player.destroy(); player = null; }
+      player = new LivePlayer(cfg);
+
+      player.on('statechange', (s) => {
+        $('stateBadge').textContent = `状态: ${s}`;
+        log(`statechange → ${s}`, 'info');
+      });
+      player.on('ready', ({ type, isLive }) => {
+        $('typeBadge').textContent = `格式: ${type.toUpperCase()}`;
+        $('meta').innerHTML = `格式 <b>${type}</b> · ${isLive ? '<b>直播</b>' : '<b>点播</b>'}`;
+        log(`ready: ${type} ${isLive ? '直播' : '点播'}`, 'ok');
+      });
+      player.on('error', (err) => {
+        log(`error [${err.code}]: ${err.message}`, 'err');
+      });
+      player.on('reconnect', ({ attempt, delay }) => {
+        log(`网络断开，第 ${attempt} 次重连（${delay}ms 后）...`, 'warn');
+      });
+      player.on('reconnected', ({ attempt }) => {
+        log(`重连成功（第 ${attempt} 次尝试）`, 'ok');
+      });
+      player.on('reconnect:failed', ({ attempts }) => {
+        log(`重连失败，已尝试 ${attempts} 次`, 'err');
+      });
+      player.on('latency', (ms) => {
+        $('latencyBadge').textContent = `延迟: ${ms}ms`;
+      });
+
+      log(`开始播放: ${cfg.url}`, 'info');
+      try {
+        await player.play();
+      } catch (e) {
+        log(`播放失败: ${e.message}`, 'err');
+      }
+    }
+
+    $('playBtn').addEventListener('click', play);
+    $('pauseBtn').addEventListener('click', () => player && player.pause());
+    $('resumeBtn').addEventListener('click', () => player && player.resume());
+    $('destroyBtn').addEventListener('click', () => {
+      if (player) { player.destroy(); player = null; }
+      $('stateBadge').textContent = '状态: idle';
+      $('typeBadge').textContent = '格式: -';
+      $('latencyBadge').textContent = '延迟: -';
+      $('meta').textContent = '已销毁';
+      log('已销毁播放器', 'warn');
+    });
+    $('clearLog').addEventListener('click', () => logEl.innerHTML = '');
+
+    document.querySelectorAll('.presets button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        $('url').value = btn.dataset.url;
+        $('type').value = btn.dataset.type || '';
+        play();
+      });
+    });
   </script>
 </body>
 </html>
