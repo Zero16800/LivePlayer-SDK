@@ -142,8 +142,8 @@
     </div>
   </div>
 
-  <script type="module">
-    import LivePlayer from './src/index.js';
+  <script src="dist/liveplayer.js"></script>
+  <script>
 
     const $ = (id) => document.getElementById(id);
     const logEl = $('log');
@@ -186,7 +186,7 @@
         log(`ready: ${type} ${isLive ? '直播' : '点播'}`, 'ok');
       });
       player.on('error', (err) => {
-        log(`error [${err.code}]: ${err.message}`, 'err');
+        log(`error: ${err.message || err}`, 'err');
       });
       player.on('reconnect', ({ attempt, delay }) => {
         log(`网络断开，第 ${attempt} 次重连（${delay}ms 后）...`, 'warn');
