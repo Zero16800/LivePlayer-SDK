@@ -222,29 +222,37 @@ class LivePlayer {
     this._timer = setInterval(() => {
       if (this._destroyed || !this.video) return;
 
-      let latency = 0;
-      let buffered = 0;
-
-      // 方式1：原生 buffered
-      if (this.video.buffered.length > 0) {
-        buffered = this.video.buffered.end(this.video.buffered.length - 1) - this.video.currentTime;
-        latency = Math.round(buffered * 1000);
+      const ct = this.video.currentTime;
+      const buffered = this.video.buffered;
+      let liveEdge = 0;
+      if (buffered && buffered.length > 0) {
+        liveEdge = buffered.end(buffered.length - 1);
       }
 
-      // 方式2：mpegts.js 内部延迟
-      if (this.player && this.player.latency) {
-        latency = Math.round(this.player.latency * 1000);
+      let latency = 0;
+      if (liveEdge > 0 && ct > 0) {
+        latency = Math.round((liveEdge - ct) * 1000);
+      }
+
+      // mpegts.js player 内部延迟
+      if (!latency && this.player) {
+        try {
+          const stats = this.player.getStatisticsInfo && this.player.getStatisticsInfo();
+          if (stats && stats.latency) latency = Math.round(stats.latency * 1000);
+        } catch (e) {}
+        try {
+          if (this.player._transmuxer && this.player._transmuxer._controller) {
+            const ctrl = this.player._transmuxer._controller;
+            if (ctrl._mediaInfo && ctrl._mediaInfo.latency !== undefined) {
+              latency = Math.round(ctrl._mediaInfo.latency * 1000);
+            }
+          }
+        } catch (e) {}
       }
 
       this.latency = latency;
-      if (this.isLive && latency > 0) {
-        this._emit('latency', this.latency);
-      }
-      this._emit('stats', {
-        latency: this.isLive ? this.latency : 0,
-        currentTime: this.video.currentTime,
-        buffered: buffered
-      });
+      this._emit('latency', this.latency);
+      this._emit('stats', { latency, currentTime: ct, liveEdge });
     }, 1000);
   }
 
