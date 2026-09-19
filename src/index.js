@@ -249,7 +249,7 @@ class LivePlayer {
       this.latency = latency;
       this._emit('latency', this.latency);
       this._emit('stats', { latency, currentTime: ct, liveEdge });
-    }, 1000);
+    }, 200);
   }
 
   _stopMonitor() {
