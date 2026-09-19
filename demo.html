@@ -167,6 +167,7 @@
         isLive: isLiveVal === '' ? undefined : isLiveVal === 'true',
         autoplay: true,
         muted: false,
+        controls: true,
         onLatency: ms => {
           $('latencyBadge').textContent = `延迟: ${ms}ms`;
         }
