@@ -10,7 +10,7 @@ class LivePlayer {
     this.type = options.type || null;
     this.isLive = options.isLive !== false;
     this.autoplay = options.autoplay !== false;
-    this.muted = options.muted || false;
+    this.muted = options.muted !== undefined ? options.muted : true;
     this.controls = options.controls !== false;
     this.enableWorker = options.enableWorker !== false;
 
@@ -218,6 +218,7 @@ class LivePlayer {
   }
 
   _startMonitor() {
+    console.log('[LivePlayer] _startMonitor called');
     this._stopMonitor();
     this._timer = setInterval(() => {
       if (this._destroyed || !this.video) return;
