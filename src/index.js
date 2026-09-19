@@ -75,6 +75,7 @@ class LivePlayer {
     this._destroyed = false;
     this._reconnectCount = 0;
     const type = this._detectType(this.url);
+    console.log('[LivePlayer] play() type=' + type + ' url=' + this.url);
 
     this._emit('ready', { type, isLive: this.isLive });
     this._setState('loading');
