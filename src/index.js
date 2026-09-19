@@ -270,12 +270,17 @@ class LivePlayer {
       const dur = this.video.duration;
       const ct = this.video.currentTime;
       if (!isFinite(dur) || dur <= 0) {
-        time.textContent = 'LIVE';
-        fill.style.width = '100%';
+        fill.style.width = '0%';
         return;
       }
       fill.style.width = (ct / dur * 100) + '%';
       time.textContent = `${this._fmtTime(ct)} / ${this._fmtTime(dur)}`;
+    });
+    this.video.addEventListener('loadedmetadata', () => {
+      const dur = this.video.duration;
+      if (isFinite(dur) && dur > 0) {
+        time.textContent = `00:00 / ${this._fmtTime(dur)}`;
+      }
     });
 
     vol.oninput = () => { this.video.volume = vol.value; this.video.muted = vol.value == 0; };
