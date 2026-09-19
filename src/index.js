@@ -204,15 +204,20 @@ class LivePlayer {
       : this.container;
     if (!container) return;
 
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'position:relative;display:inline-block;line-height:0;';
+    container.appendChild(wrapper);
+    this._wrapper = wrapper;
+
     this.video = document.createElement('video');
     this.video.autoplay = this.autoplay;
     this.video.muted = this.muted;
     this.video.playsinline = true;
     this.video.controls = false;
     this.video.style.cssText = 'width:1280px;max-width:100%;height:720px;background:#000;border-radius:8px;display:block;';
-    container.appendChild(this.video);
+    wrapper.appendChild(this.video);
 
-    if (this.controls) this._createControls(container);
+    if (this.controls) this._createControls(wrapper);
   }
 
   _createControls(container) {
@@ -401,6 +406,7 @@ class LivePlayer {
       this.player = null;
     }
     if (this.controlsEl) { this.controlsEl.remove(); this.controlsEl = null; }
+    if (this._wrapper && this._wrapper.parentNode) { this._wrapper.parentNode.removeChild(this._wrapper); this._wrapper = null; }
     if (this.video && this.video.parentNode) {
       this.video.parentNode.removeChild(this.video);
       this.video = null;
