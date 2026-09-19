@@ -190,7 +190,7 @@
         log(`ready: ${type} ${isLive ? '直播' : '点播'}`, 'ok');
       });
       player.on('error', (err) => {
-        log(`error: ${err.message || err}`, 'err');
+        log(`error: ${err?.message || err || 'unknown'}`, 'err');
       });
       player.on('reconnect', ({ attempt, delay }) => {
         log(`网络断开，第 ${attempt} 次重连（${delay}ms 后）...`, 'warn');

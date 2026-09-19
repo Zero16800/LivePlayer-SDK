@@ -298,7 +298,7 @@ class LivePlayer {
     if (!this.video) return;
     const events = ['play','pause','ended','waiting','playing','seeking','seeked','volumechange','fullscreenchange','error'];
     events.forEach(evt => {
-      this.video.addEventListener(evt, () => this._emit(evt));
+      this.video.addEventListener(evt, (e) => this._emit(evt, e));
     });
     this.video.addEventListener('playing', () => {
       this._reconnectCount = 0;
