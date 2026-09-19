@@ -294,17 +294,12 @@ class LivePlayer {
     container.appendChild(ctrl);
     this.controlsEl = ctrl;
 
-    if (this.isLive) {
-      progress.style.display = 'none';
-      time.textContent = 'LIVE';
-      time.style.color = '#ff4444';
-    }
-
     this.video.addEventListener('loadedmetadata', () => {
       if (isFinite(this.video.duration) && this.video.duration > 0) {
-        progress.style.display = '';
-        time.style.color = '#fff';
         time.textContent = `00:00 / ${this._fmtTime(this.video.duration)}`;
+      } else {
+        time.textContent = 'LIVE';
+        time.style.color = '#ff4444';
       }
     });
   }
