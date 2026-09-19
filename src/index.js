@@ -259,10 +259,14 @@ class LivePlayer {
       this.video.currentTime = ((e.clientX - r.left) / r.width) * this.video.duration;
     };
     this.video.addEventListener('timeupdate', () => {
-      if (!this.video.duration) return;
-      fill.style.width = (this.video.currentTime / this.video.duration * 100) + '%';
-      const ct = this.video.currentTime;
       const dur = this.video.duration;
+      const ct = this.video.currentTime;
+      if (!isFinite(dur) || dur <= 0) {
+        time.textContent = 'LIVE';
+        fill.style.width = '100%';
+        return;
+      }
+      fill.style.width = (ct / dur * 100) + '%';
       time.textContent = `${this._fmtTime(ct)} / ${this._fmtTime(dur)}`;
     });
 
@@ -276,6 +280,12 @@ class LivePlayer {
     ctrl.append(playBtn, progress, time, vol, fullscreenBtn);
     container.appendChild(ctrl);
     this.controlsEl = ctrl;
+
+    if (this.isLive) {
+      progress.style.display = 'none';
+      time.textContent = 'LIVE';
+      time.style.color = '#ff4444';
+    }
   }
 
   _fmtTime(s) {
