@@ -223,10 +223,11 @@ class LivePlayer {
       if (this._destroyed || !this.video) return;
 
       const ct = this.video.currentTime;
-      const buffered = this.video.buffered;
+      const buf = this.video.buffered;
       let liveEdge = 0;
-      if (buffered && buffered.length > 0) {
-        liveEdge = buffered.end(buffered.length - 1);
+      let bufLen = buf ? buf.length : 0;
+      if (bufLen > 0) {
+        liveEdge = buf.end(bufLen - 1);
       }
 
       let latency = 0;
@@ -234,21 +235,7 @@ class LivePlayer {
         latency = Math.round((liveEdge - ct) * 1000);
       }
 
-      // mpegts.js player 内部延迟
-      if (!latency && this.player) {
-        try {
-          const stats = this.player.getStatisticsInfo && this.player.getStatisticsInfo();
-          if (stats && stats.latency) latency = Math.round(stats.latency * 1000);
-        } catch (e) {}
-        try {
-          if (this.player._transmuxer && this.player._transmuxer._controller) {
-            const ctrl = this.player._transmuxer._controller;
-            if (ctrl._mediaInfo && ctrl._mediaInfo.latency !== undefined) {
-              latency = Math.round(ctrl._mediaInfo.latency * 1000);
-            }
-          }
-        } catch (e) {}
-      }
+      console.log('[LivePlayer] ct=' + ct.toFixed(2) + ' bufLen=' + bufLen + ' liveEdge=' + liveEdge.toFixed(2) + ' latency=' + latency);
 
       this.latency = latency;
       this._emit('latency', this.latency);
