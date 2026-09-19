@@ -105,11 +105,12 @@ class LivePlayer {
       {
         enableWorker: this.enableWorker,
         enableStashBuffer: false,
-        stashInitialSize: 64,
-        lazyLoadMaxDuration: 0.3,
+        stashInitialSize: 32,
+        lazyLoadMaxDuration: 0.2,
         liveBufferLatencyChasing: true,
-        liveBufferLatencyMaxLatency: 0.4,
-        liveBufferLatencyChasingOnPaused: true
+        liveBufferLatencyMaxLatency: 0.3,
+        liveBufferLatencyChasingOnPaused: true,
+        deferLoadAfterSourceOpen: false
       }
     );
     this.player.attachMediaElement(this.video);
