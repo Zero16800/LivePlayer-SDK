@@ -193,26 +193,95 @@ class LivePlayer {
     if (this._dash) { try { this._dash.reset(); } catch (e) {} this._dash = null; }
     if (this._reconnectTimer) { clearTimeout(this._reconnectTimer); this._reconnectTimer = null; }
     if (this.video) { this.video.src = ''; this.video.load(); }
+    if (this.controlsEl) { this.controlsEl.remove(); this.controlsEl = null; }
     this._stopMonitor();
-    this.video = document.createElement('video');
-    this.video.autoplay = this.autoplay;
-    this.video.muted = this.muted;
-    this.video.playsinline = true;
-    this.video.controls = this.controls && !this.isLive;
-    this.video.style.cssText = 'width:1280px;max-width:100%;height:720px;background:#000;border-radius:8px;';
-    const styleId = 'liveplayer-style';
-    if (!document.getElementById(styleId)) {
-      const s = document.createElement('style');
-      s.id = styleId;
-      s.textContent = 'video.lp-live::-webkit-media-controls { display:none !important; } video.lp-live::-webkit-media-controls-enclosure { display:none !important; }';
-      document.head.appendChild(s);
-    }
-    if (this.isLive) this.video.classList.add('lp-live');
 
     const container = typeof this.container === 'string'
       ? document.querySelector(this.container)
       : this.container;
-    if (container) container.appendChild(this.video);
+    if (!container) return;
+
+    this.video = document.createElement('video');
+    this.video.autoplay = this.autoplay;
+    this.video.muted = this.muted;
+    this.video.playsinline = true;
+    this.video.controls = false;
+    this.video.style.cssText = 'width:1280px;max-width:100%;height:720px;background:#000;border-radius:8px;display:block;';
+    container.appendChild(this.video);
+
+    if (this.controls) this._createControls(container);
+  }
+
+  _createControls(container) {
+    const css = `#lp-ctrl-${this._id}{position:relative;width:100%;margin-top:-40px;z-index:10;display:flex;align-items:center;gap:6px;padding:6px 12px;background:linear-gradient(transparent,rgba(0,0,0,.85));border-radius:0 0 8px 8px;font-family:sans-serif;color:#fff;font-size:13px;box-sizing:border-box;user-select:none}
+#lp-ctrl-${this._id} button{background:none;border:none;color:#fff;cursor:pointer;font-size:16px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px}
+#lp-ctrl-${this._id} button:hover{background:rgba(255,255,255,.2)}
+#lp-ctrl-${this._id} .lp-progress{flex:1;height:4px;background:rgba(255,255,255,.3);border-radius:2px;cursor:pointer;position:relative}
+#lp-ctrl-${this._id} .lp-progress-fill{height:100%;background:#00aaff;border-radius:2px;width:0%}
+#lp-ctrl-${this._id} .lp-time{min-width:80px;text-align:center}
+#lp-ctrl-${this._id} input[type=range]{width:60px;accent-color:#00aaff}`;
+    if (!document.getElementById('lp-ctrl-style')) {
+      const s = document.createElement('style'); s.id = 'lp-ctrl-style'; s.textContent = css; document.head.appendChild(s);
+    }
+
+    const ctrl = document.createElement('div');
+    ctrl.id = `lp-ctrl-${this._id}`;
+
+    const playBtn = document.createElement('button');
+    playBtn.textContent = '⏸';
+
+    const progress = document.createElement('div');
+    progress.className = 'lp-progress';
+    const fill = document.createElement('div');
+    fill.className = 'lp-progress-fill';
+    progress.appendChild(fill);
+
+    const time = document.createElement('span');
+    time.className = 'lp-time';
+    time.textContent = '00:00';
+
+    const vol = document.createElement('input');
+    vol.type = 'range'; vol.min = 0; vol.max = 1; vol.step = 0.1;
+    vol.value = this.muted ? 0 : this.video.volume;
+
+    const fullscreenBtn = document.createElement('button');
+    fullscreenBtn.textContent = '⛶';
+
+    playBtn.onclick = () => {
+      if (this.video.paused) { this.video.play(); playBtn.textContent = '⏸'; }
+      else { this.video.pause(); playBtn.textContent = '▶'; }
+    };
+    this.video.addEventListener('play', () => playBtn.textContent = '⏸');
+    this.video.addEventListener('pause', () => playBtn.textContent = '▶');
+
+    progress.onclick = (e) => {
+      const r = progress.getBoundingClientRect();
+      this.video.currentTime = ((e.clientX - r.left) / r.width) * this.video.duration;
+    };
+    this.video.addEventListener('timeupdate', () => {
+      if (!this.video.duration) return;
+      fill.style.width = (this.video.currentTime / this.video.duration * 100) + '%';
+      const ct = this.video.currentTime;
+      const dur = this.video.duration;
+      time.textContent = `${this._fmtTime(ct)} / ${this._fmtTime(dur)}`;
+    });
+
+    vol.oninput = () => { this.video.volume = vol.value; this.video.muted = vol.value == 0; };
+
+    fullscreenBtn.onclick = () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else container.requestFullscreen();
+    };
+
+    ctrl.append(playBtn, progress, time, vol, fullscreenBtn);
+    container.appendChild(ctrl);
+    this.controlsEl = ctrl;
+  }
+
+  _fmtTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
   }
 
   _bindEvents() {
@@ -318,6 +387,7 @@ class LivePlayer {
       this.player.destroy();
       this.player = null;
     }
+    if (this.controlsEl) { this.controlsEl.remove(); this.controlsEl = null; }
     if (this.video && this.video.parentNode) {
       this.video.parentNode.removeChild(this.video);
       this.video = null;
