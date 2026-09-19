@@ -104,11 +104,11 @@ class LivePlayer {
       { type: 'flv', isLive: this.isLive, url: this.url },
       {
         enableWorker: this.enableWorker,
-        enableStashBuffer: true,
-        stashInitialSize: 128,
-        lazyLoadMaxDuration: 1,
+        enableStashBuffer: false,
+        stashInitialSize: 16,
+        lazyLoadMaxDuration: 0.1,
         liveBufferLatencyChasing: true,
-        liveBufferLatencyMaxLatency: 1,
+        liveBufferLatencyMaxLatency: 0.3,
         liveBufferLatencyChasingOnPaused: true
       }
     );
