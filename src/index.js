@@ -84,6 +84,8 @@ class LivePlayer {
         await this._playFLV();
       } else if (type === 'hls') {
         await this._playHLS();
+      } else if (type === 'dash') {
+        await this._playDASH();
       } else if (type === 'mp4') {
         await this._playNative();
       } else {
@@ -158,6 +160,25 @@ class LivePlayer {
     this._createVideo();
     this.video.src = this.url;
     await this.video.play();
+    this._setState('playing');
+    this._startMonitor();
+    this._bindEvents();
+  }
+
+  async _playDASH() {
+    this._createVideo();
+    if (typeof window.dashjs === 'undefined') {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.dashjs.org/latest/dash.all.min.js';
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('Failed to load dash.js'));
+        document.head.appendChild(s);
+      });
+    }
+    const player = window.dashjs.MediaPlayer().create();
+    this._dash = player;
+    player.initialize(this.video, this.url, this.autoplay);
     this._setState('playing');
     this._startMonitor();
     this._bindEvents();
@@ -265,6 +286,7 @@ class LivePlayer {
     this._stopMonitor();
     if (this._reconnectTimer) { clearTimeout(this._reconnectTimer); this._reconnectTimer = null; }
     if (this._hls) { this._hls.destroy(); this._hls = null; }
+    if (this._dash) { this._dash.reset(); this._dash = null; }
     if (this.player) {
       this.player.pause();
       this.player.unload();
