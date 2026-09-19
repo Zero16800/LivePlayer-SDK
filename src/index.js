@@ -121,6 +121,7 @@ class LivePlayer {
   }
 
   async _playHLS() {
+    console.log('[LivePlayer] _playHLS called, Hls exists:', typeof window.Hls);
     this._createVideo();
     if (this.video.canPlayType('application/vnd.apple.mpegurl')) {
       this.video.src = this.url;
