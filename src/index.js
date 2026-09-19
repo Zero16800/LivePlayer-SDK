@@ -105,10 +105,10 @@ class LivePlayer {
       {
         enableWorker: this.enableWorker,
         enableStashBuffer: true,
-        stashInitialSize: 64,
-        lazyLoadMaxDuration: 0.5,
+        stashInitialSize: 32,
+        lazyLoadMaxDuration: 0.3,
         liveBufferLatencyChasing: true,
-        liveBufferLatencyMaxLatency: 0.8,
+        liveBufferLatencyMaxLatency: 0.5,
         liveBufferLatencyChasingOnPaused: true
       }
     );
