@@ -185,7 +185,15 @@ class LivePlayer {
   }
 
   _createVideo() {
-    this.destroy();
+    if (this.player) {
+      try { this.player.pause(); this.player.unload(); this.player.detachMediaElement(); } catch (e) {}
+      this.player = null;
+    }
+    if (this._hls) { try { this._hls.destroy(); } catch (e) {} this._hls = null; }
+    if (this._dash) { try { this._dash.reset(); } catch (e) {} this._dash = null; }
+    if (this._reconnectTimer) { clearTimeout(this._reconnectTimer); this._reconnectTimer = null; }
+    if (this.video) { this.video.src = ''; this.video.load(); }
+    this._stopMonitor();
     this.video = document.createElement('video');
     this.video.autoplay = this.autoplay;
     this.video.muted = this.muted;
