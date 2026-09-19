@@ -200,17 +200,16 @@ class LivePlayer {
     this._stopMonitor();
     this._timer = setInterval(() => {
       if (this._destroyed || !this.video) return;
-      if (this.video.buffered.length > 0 && this.isLive) {
-        this.latency = Math.round(
-          (this.video.buffered.end(this.video.buffered.length - 1) - this.video.currentTime) * 1000
-        );
-        this._emit('latency', this.latency);
+      if (this.video.buffered.length > 0) {
+        const buffered = this.video.buffered.end(this.video.buffered.length - 1) - this.video.currentTime;
+        if (this.isLive) {
+          this.latency = Math.round(buffered * 1000);
+          this._emit('latency', this.latency);
+        }
         this._emit('stats', {
-          latency: this.latency,
+          latency: this.isLive ? this.latency : 0,
           currentTime: this.video.currentTime,
-          buffered: this.video.buffered.length > 0
-            ? this.video.buffered.end(this.video.buffered.length - 1) - this.video.currentTime
-            : 0
+          buffered: buffered
         });
       }
     }, 1000);
