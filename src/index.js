@@ -221,18 +221,30 @@ class LivePlayer {
     this._stopMonitor();
     this._timer = setInterval(() => {
       if (this._destroyed || !this.video) return;
+
+      let latency = 0;
+      let buffered = 0;
+
+      // 方式1：原生 buffered
       if (this.video.buffered.length > 0) {
-        const buffered = this.video.buffered.end(this.video.buffered.length - 1) - this.video.currentTime;
-        if (this.isLive) {
-          this.latency = Math.round(buffered * 1000);
-          this._emit('latency', this.latency);
-        }
-        this._emit('stats', {
-          latency: this.isLive ? this.latency : 0,
-          currentTime: this.video.currentTime,
-          buffered: buffered
-        });
+        buffered = this.video.buffered.end(this.video.buffered.length - 1) - this.video.currentTime;
+        latency = Math.round(buffered * 1000);
       }
+
+      // 方式2：mpegts.js 内部延迟
+      if (this.player && this.player.latency) {
+        latency = Math.round(this.player.latency * 1000);
+      }
+
+      this.latency = latency;
+      if (this.isLive && latency > 0) {
+        this._emit('latency', this.latency);
+      }
+      this._emit('stats', {
+        latency: this.isLive ? this.latency : 0,
+        currentTime: this.video.currentTime,
+        buffered: buffered
+      });
     }, 1000);
   }
 
