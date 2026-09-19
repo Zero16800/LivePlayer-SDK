@@ -191,7 +191,7 @@ class LivePlayer {
     this.video.muted = this.muted;
     this.video.playsinline = true;
     this.video.controls = this.controls;
-    this.video.style.cssText = 'width:100%;max-width:100%;background:#000;border-radius:8px';
+    this.video.style.cssText = 'width:1280px;max-width:100%;height:720px;background:#000;border-radius:8px';
 
     const container = typeof this.container === 'string'
       ? document.querySelector(this.container)
