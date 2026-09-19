@@ -105,11 +105,13 @@ class LivePlayer {
       {
         enableWorker: this.enableWorker,
         enableStashBuffer: false,
-        stashInitialSize: 16,
-        lazyLoadMaxDuration: 0.1,
+        stashInitialSize: 8,
+        lazyLoadMaxDuration: 0.05,
         liveBufferLatencyChasing: true,
-        liveBufferLatencyMaxLatency: 0.3,
-        liveBufferLatencyChasingOnPaused: true
+        liveBufferLatencyMaxLatency: 0.15,
+        liveBufferLatencyChasingOnPaused: true,
+        autoCleanupSourceBuffer: true,
+        autoCleanupMaxBackwardDuration: 0.5
       }
     );
     this.player.attachMediaElement(this.video);
@@ -244,7 +246,11 @@ class LivePlayer {
         latency = Math.round((liveEdge - ct) * 1000);
       }
 
-      console.log('[LivePlayer] ct=' + ct.toFixed(2) + ' bufLen=' + bufLen + ' liveEdge=' + liveEdge.toFixed(2) + ' latency=' + latency);
+      // 延迟超过500ms，强制追帧
+      if (this.isLive && latency > 500 && liveEdge > 0) {
+        this.video.currentTime = liveEdge - 0.1;
+        latency = 100;
+      }
 
       this.latency = latency;
       this._emit('latency', this.latency);
