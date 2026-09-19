@@ -146,6 +146,7 @@ class LivePlayer {
     hls.attachMedia(this.video);
     hls.on(window.Hls.Events.MANIFEST_PARSED, () => this.video.play());
     hls.on(window.Hls.Events.ERROR, (e, data) => {
+      console.log('[HLS]', data.type, data.details, data.fatal);
       if (data.fatal) {
         this._emit('error', new Error(data.type + ': ' + data.details));
         this._tryReconnect();
