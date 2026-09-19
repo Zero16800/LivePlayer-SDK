@@ -198,8 +198,15 @@ class LivePlayer {
     this.video.autoplay = this.autoplay;
     this.video.muted = this.muted;
     this.video.playsinline = true;
-    this.video.controls = this.controls;
-    this.video.style.cssText = 'width:1280px;max-width:100%;height:720px;background:#000;border-radius:8px';
+    this.video.controls = false;
+    this.video.style.cssText = 'width:1280px;max-width:100%;height:720px;background:#000;border-radius:8px;';
+    const styleId = 'liveplayer-style';
+    if (!document.getElementById(styleId)) {
+      const s = document.createElement('style');
+      s.id = styleId;
+      s.textContent = 'video::-webkit-media-controls { display:none !important; } video::--webkit-media-controls-enclosure { display:none !important; }';
+      document.head.appendChild(s);
+    }
 
     const container = typeof this.container === 'string'
       ? document.querySelector(this.container)
