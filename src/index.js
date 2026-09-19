@@ -114,20 +114,20 @@ class LivePlayer {
     );
     this.player.attachMediaElement(this.video);
     this.player.load();
-    await this.video.play();
-    this._setState('playing');
     this._startMonitor();
     this._bindEvents();
+    try { await this.video.play(); } catch (e) {}
+    this._setState('playing');
   }
 
   async _playHLS() {
     this._createVideo();
     if (this.video.canPlayType('application/vnd.apple.mpegurl')) {
       this.video.src = this.url;
-      await this.video.play();
-      this._setState('playing');
       this._startMonitor();
       this._bindEvents();
+      try { await this.video.play(); } catch (e) {}
+      this._setState('playing');
       return;
     }
     if (typeof window.Hls === 'undefined') {
@@ -151,18 +151,18 @@ class LivePlayer {
         this._tryReconnect();
       }
     });
-    this._setState('playing');
     this._startMonitor();
     this._bindEvents();
+    this._setState('playing');
   }
 
   async _playNative() {
     this._createVideo();
     this.video.src = this.url;
-    await this.video.play();
-    this._setState('playing');
     this._startMonitor();
     this._bindEvents();
+    try { await this.video.play(); } catch (e) {}
+    this._setState('playing');
   }
 
   async _playDASH() {
@@ -179,9 +179,9 @@ class LivePlayer {
     const player = window.dashjs.MediaPlayer().create();
     this._dash = player;
     player.initialize(this.video, this.url, this.autoplay);
-    this._setState('playing');
     this._startMonitor();
     this._bindEvents();
+    this._setState('playing');
   }
 
   _createVideo() {
