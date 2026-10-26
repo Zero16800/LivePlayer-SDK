@@ -132,5 +132,4 @@ npm run build
 输出：`dist/liveplayer.js`
 
 ## License
-
-MIT
+##广州大龙网络科技开发
